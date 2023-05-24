@@ -7510,6 +7510,7 @@ GameObject:
   m_Component:
   - component: {fileID: 828661927}
   - component: {fileID: 828661928}
+  - component: {fileID: 828661929}
   m_Layer: 0
   m_Name: Player Character Sprite
   m_TagString: Untagged
@@ -7584,6 +7585,26 @@ SpriteRenderer:
   m_WasSpriteAssigned: 1
   m_MaskInteraction: 0
   m_SpriteSortPoint: 1
+--- !u!95 &828661929
+Animator:
+  serializedVersion: 4
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 828661926}
+  m_Enabled: 1
+  m_Avatar: {fileID: 0}
+  m_Controller: {fileID: 9100000, guid: d2982da6c72633c408b7e7a34205afb1, type: 2}
+  m_CullingMode: 0
+  m_UpdateMode: 0
+  m_ApplyRootMotion: 0
+  m_LinearVelocityBlending: 0
+  m_StabilizeFeet: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
+  m_KeepAnimatorControllerStateOnDisable: 0
 --- !u!1 &895637512
 GameObject:
   m_ObjectHideFlags: 0
@@ -7840,7 +7861,7 @@ MonoBehaviour:
   moveSpeed: 7.5
   sprintSpeed: 10
   playerBody: {fileID: 1761276331}
-  animator: {fileID: 0}
+  animator: {fileID: 828661929}
   movementVector: {x: 0, y: 0}
   storedPosition: {x: 0, y: 0}
   isStopped: 0

@@ -9,6 +9,10 @@ public class PlayerMovement : MonoBehaviour
     private float moveSpeed = 7.5f;
     [SerializeField]
     private float sprintSpeed = 10f;
+    [SerializeField]
+    private float knockbackSpeed = 20f;
+    [SerializeField]
+    private float knockbackTime = 0.25f;
 
     [SerializeField]
     private Rigidbody2D playerBody;
@@ -21,6 +25,9 @@ public class PlayerMovement : MonoBehaviour
     //recorded value from moving for animator idle
     private Vector2 stopVector;
 
+    //stored value from last knockback
+    private Vector2 knockbackVector;
+
 
     //if we need to store the player's position briefly
     public Vector2 storedPosition;
@@ -28,6 +35,7 @@ public class PlayerMovement : MonoBehaviour
     public bool isStopped = false;
 
     public bool isSprinting = false;
+    public bool isKnockedBack = false;
     
 
     void Start()
@@ -52,6 +60,11 @@ public class PlayerMovement : MonoBehaviour
         {
             return;
         }
+        if (isKnockedBack)
+        {
+            PerformKnockback();
+            return;
+        }
         MovePlayer();
         StoreDirection();
     }
@@ -64,6 +77,22 @@ public class PlayerMovement : MonoBehaviour
             newSpeed = sprintSpeed;
         }
         playerBody.MovePosition(playerBody.position + movementVector * newSpeed * Time.fixedDeltaTime);
+    }
+
+    void KnockbackPlayer(Vector2 direction)
+    {
+        if (isKnockedBack)
+        {
+            return;
+        }
+        isKnockedBack = true;
+        knockbackVector = direction;
+        StartCoroutine(KnockbackClock());
+    }
+
+    void PerformKnockback()
+    {
+        playerBody.MovePosition(playerBody.position + knockbackVector * knockbackSpeed * Time.fixedDeltaTime);
     }
 
     //store the last direction moved-in
@@ -108,9 +137,16 @@ public class PlayerMovement : MonoBehaviour
     {
         animator.SetFloat("horizontal", movementVector.x);
         animator.SetFloat("vertical", movementVector.y);
-        animator.SetFloat("speed", movementVector.sqrMagnitude);
         animator.SetFloat("stop horizontal", stopVector.x);
         animator.SetFloat("stop vertical", stopVector.y);
+        if(isKnockedBack)
+        {
+            animator.SetFloat("speed", 0f);
+        }
+        else
+        {
+            animator.SetFloat("speed", movementVector.sqrMagnitude);
+        }
     }
 
     void FreezeAnimatePlayer()
@@ -128,5 +164,12 @@ public class PlayerMovement : MonoBehaviour
     {
         Debug.Log("Player Movement UnFrozen");
         isStopped = false;
+    }
+
+    IEnumerator KnockbackClock()
+    {
+        //start knockback behavior
+        yield return new WaitForSeconds(knockbackTime);
+        isKnockedBack = false;
     }
 }

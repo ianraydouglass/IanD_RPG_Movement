@@ -164,5 +164,28 @@ public class EnemyBehavior : MonoBehaviour
         }
         patrolIndex = nextPoint;
     }
+
+    //method to trigger chase behavior if the contact alert zone trigger script fires
+    public void DetectPlayer(GameObject playerObject)
+    {
+        if(thisMode == EnemyMode.Idle || thisMode == EnemyMode.Patrol)
+        {
+            thisMode = EnemyMode.Alert;
+            targetPlayer = playerObject;
+
+            //for testing purposes we will skip alert
+            CompleteAlert();
+        }
+
+    }
+
+    //trigger when the alert animation is complete to start the chase behavior
+    public void CompleteAlert()
+    {
+        if(thisMode == EnemyMode.Alert)
+        {
+            thisMode = EnemyMode.Chase;
+        }
+    }
     
 }

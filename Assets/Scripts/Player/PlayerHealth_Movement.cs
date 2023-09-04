@@ -68,6 +68,22 @@ public class PlayerHealth_Movement : MonoBehaviour
         TakeDamage(knockbackVector);
     }
 
+    public void EnemyDamage(GameObject enemyObject)
+    {
+        if (isInvulnerable)
+        {
+            return;
+        }
+        enemyObject.SendMessage("ConfirmHitPlayer", SendMessageOptions.DontRequireReceiver);
+        //get a direction from the two objects
+        Vector2 enemyPosition = enemyObject.transform.position;
+        Vector2 myPosition = this.gameObject.transform.position;
+        Vector2 push = (myPosition - enemyPosition);
+        //sets the distance to 1 basically
+        push.Normalize();
+        TakeDamage(push);
+    }
+
     void TakeDamage(Vector2 knockbackVector)
     {
         if(currentLife <= 1 && isImmortal)

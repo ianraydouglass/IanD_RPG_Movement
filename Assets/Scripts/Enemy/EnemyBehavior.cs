@@ -27,6 +27,8 @@ public class EnemyBehavior : MonoBehaviour
     [SerializeField]
     private GameObject patrolZone;
 
+    private ChaseLimiter chaseLimiter;
+
     [SerializeField]
     private GameObject alertZone;
 
@@ -46,7 +48,15 @@ public class EnemyBehavior : MonoBehaviour
     [SerializeField]
     private float closeRange = 0.1f;
 
+    [SerializeField]
+    private float alertDuration = 2f;
+
+    [SerializeField]
+    private float gloatDuration = 2f;
+
     private GameObject targetPlayer;
+
+    public float distanceFromPatrol = 0f;
 
     private Vector2 MoveDirection(Vector2 otherPosition)
     {
@@ -130,12 +140,13 @@ public class EnemyBehavior : MonoBehaviour
     void Start()
     {
         thisMode = EnemyMode.Patrol;
+        chaseLimiter = patrolZone.GetComponent<ChaseLimiter>();
     }
 
     // Update is called once per frame
     void Update()
     {
-        
+        CheckChaseLimit();
     }
 
     void FixedUpdate()
@@ -151,6 +162,11 @@ public class EnemyBehavior : MonoBehaviour
         enemyBody.MovePosition(enemyBody.position + MoveDirection(GetTarget()) * CurrentSpeed() * Time.fixedDeltaTime);
         if(HasArrived())
         {
+            //the skeleton should transition out of dismiss if they arrive at a patrol point
+            if(thisMode == EnemyMode.Dismiss)
+            {
+                thisMode = EnemyMode.Patrol;
+            }
             NextPoint();
         }
     }
@@ -166,17 +182,43 @@ public class EnemyBehavior : MonoBehaviour
     }
 
     //method to trigger chase behavior if the contact alert zone trigger script fires
-    public void DetectPlayer(GameObject playerObject)
+    public void DetectPlayer(GameObject playerObject, bool canExitDismiss)
     {
         if(thisMode == EnemyMode.Idle || thisMode == EnemyMode.Patrol)
         {
             thisMode = EnemyMode.Alert;
             targetPlayer = playerObject;
 
-            //for testing purposes we will skip alert
-            CompleteAlert();
+            StartCoroutine(AlertTimer());
+        }
+        if(thisMode == EnemyMode.Dismiss && canExitDismiss)
+        {
+            thisMode = EnemyMode.Alert;
+            targetPlayer = playerObject;
+
+            StartCoroutine(AlertTimer());
         }
 
+    }
+
+    public void CheckChaseLimit()
+    {
+        if(thisMode == EnemyMode.Chase)
+        {
+            distanceFromPatrol = Vector2.Distance(this.transform.position, patrolZone.transform.position);
+            if (distanceFromPatrol > chaseLimiter.GetChaseDistance())
+            {
+                thisMode = EnemyMode.Dismiss;
+                Debug.Log("Dismissing chase");
+            }
+        }
+    }
+
+    public void ConfirmHitPlayer()
+    {
+        thisMode = EnemyMode.Gloat;
+        StartCoroutine(GloatTimer());
+        
     }
 
     //trigger when the alert animation is complete to start the chase behavior
@@ -184,8 +226,34 @@ public class EnemyBehavior : MonoBehaviour
     {
         if(thisMode == EnemyMode.Alert)
         {
+            Debug.Log("Begin Chase");
             thisMode = EnemyMode.Chase;
         }
     }
-    
+
+    public void CompleteGloat()
+    {
+        if(thisMode == EnemyMode.Gloat)
+        {
+            Debug.Log("Resume Chase");
+            thisMode = EnemyMode.Chase;
+        }
+    }
+
+    IEnumerator AlertTimer()
+    {
+        Debug.Log("Alert Started");
+        yield return new WaitForSeconds(alertDuration);
+        
+        CompleteAlert();
+    }
+
+    IEnumerator GloatTimer()
+    {
+        Debug.Log("Gloat Started");
+        yield return new WaitForSeconds(gloatDuration);
+
+        CompleteGloat();
+    }
+
 }
